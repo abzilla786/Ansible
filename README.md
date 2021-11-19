@@ -125,37 +125,26 @@ Make sure you pay attention to indentation as it makes a difference and could ca
     apt: pkg=mongodb state=present
 ```
 
+#### Hosts setup to connect VMS
+```
+This is the default ansible 'hosts' file.
+[web]
+192.168.33.10 ansible_user=vagrant ansible_ssh_pass=vagrant
 
+[db]
+192.168.33.11 ansible_user=vagrant ansible_ssh_pass=vagrant
+```
 
-- hosts: web
-  gather_facts: yes
-  become: true
+It should live in /etc/ansible/hosts
 
-  tasks:
+ - Comments begin with the '#' character
+ - Blank lines are ignored
+ - Groups of hosts are delimited by [header] elements
+ - You can enter hostnames or ip addresses
+ - A hostname/ip can be a member of multiple groups
 
-  - name: Add Nodesource Keys
-    become: yes
-    apt_key:
-      url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
-      state: present
-
-# Note: "bento" is ubuntu-speak for 18.04
-  - name: Add Nodesource Apt Sources
-    become: yes
-    apt_repository:
-      repo: '{{ item }}'
-      state: present
-    with_items:
-      - 'deb https://deb.nodesource.com/node_6.x bento main'
-      - 'deb-src https://deb.nodesource.com/node_6.x bento main'
-
-  - name: Install NodeJS and NPM
-    become: yes
-    apt:
-      name: '{{ item }}'
-      state: latest
-      update_cache: yes
-    with_items:
-      - nodejs
-      - nodejs-legacy
-      - npm
+ command to disable `host_key_checking` incase of ssh pass error:
+ ```
+ sed -i '/#host_key_checking = False/c\host_key_checking = True' /etc/ansible/ansible.cfg
+ ```
+ 
