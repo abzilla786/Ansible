@@ -1,8 +1,6 @@
 # Infrastructure as Code with Ansible
 
 
-d
-
 
 ### Ansible Controller and Agent nodes set up with Vagrant
 ```
@@ -59,3 +57,105 @@ Vagrant.configure("2") do |config|
   end
 end
 ```
+#### set hosts for other machines inside ansible machine
+```
+[web]
+192.168.33.10 ansible_connection=ssh ansible_ssh_user=vagrant ansible_ssh_pass=vagrant
+
+enter this code inside hosts file using `sudo nano ~/etc/ansible/hosts`
+
+we can test all terminals associated with the ansible controller by running the command `ansible all -m ping`
+
+for individual servers use `ansible web -m ping`
+``` 
+#### ansible ad-hoc commands
+Date
+- ansible db -a "date" 
+Free memory
+- ansible all -a "free -m" -i ansible_hosts
+- ansible db -a "free"     
+view files directory in specific machine
+- ansible web -m shell -a "ls -a"
+Uptime
+- ansible all -m command -a uptime 
+- ansible all -m shell -a uptime 
+- ansible all -a uptime
+Physical memory
+- ansible all -m shell -a "cat /proc/meminfo|head -2" 
+Execute a command as root user
+- ansible multi -m shell -a "cat /etc/passwd|grep -i vagrant"
+
+##### example of .YAML file
+
+Command to run YML files ansible-playbook filename.yml
+
+when creating a yaml file inside vm, use commad `sudo nano nignx.yml` 
+
+An example of the type of script you would write is:
+```
+# define the agent nodes name host name
+
+- hosts: web
+# see logs
+  gather_facts: yes
+
+# sudo permission with become = true
+  become: true
+
+# install nginx on web server
+  tasks:
+  - name: Install nginx
+    apt: pkg=nginx state=present
+```
+Make sure you pay attention to indentation as it makes a difference and could cause the file to not execute properly.
+
+#### YML to install mongodb using ansible
+```
+---
+# configuring mongodb
+
+- hosts: db
+
+  gather_facts: yes
+
+  become: true
+
+  tasks:
+  - name: install mongodb
+    apt: pkg=mongodb state=present
+```
+
+
+
+- hosts: web
+  gather_facts: yes
+  become: true
+
+  tasks:
+
+  - name: Add Nodesource Keys
+    become: yes
+    apt_key:
+      url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+      state: present
+
+# Note: "bento" is ubuntu-speak for 18.04
+  - name: Add Nodesource Apt Sources
+    become: yes
+    apt_repository:
+      repo: '{{ item }}'
+      state: present
+    with_items:
+      - 'deb https://deb.nodesource.com/node_6.x bento main'
+      - 'deb-src https://deb.nodesource.com/node_6.x bento main'
+
+  - name: Install NodeJS and NPM
+    become: yes
+    apt:
+      name: '{{ item }}'
+      state: latest
+      update_cache: yes
+    with_items:
+      - nodejs
+      - nodejs-legacy
+      - npm

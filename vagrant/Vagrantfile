@@ -22,6 +22,8 @@ Vagrant.configure("2") do |config|
         #   assigning private IP
     
         # config.hostsupdater.aliases = ["development.web"]
+        web.vm.synced_folder "ansible/app", "/home/ubuntu/app"
+        web.vm.synced_folder "ansible/environment", "/home/ubuntu/environment"
         # creating a link called development.web so we can access web page with this link instread of an IP
     
         end
@@ -34,10 +36,12 @@ Vagrant.configure("2") do |config|
         db.vm.hostname = 'db'
     
         db.vm.network :private_network, ip: "192.168.33.11"
+
+        db.vm.synced_folder "ansible/environment", "/home/ubuntu/environment"
     
         # config.hostsupdater.aliases = ["development.db"]
         end
-    
+  
     # creating are Ansible controller
       config.vm.define "controller" do |controller|
         
@@ -47,7 +51,8 @@ Vagrant.configure("2") do |config|
         
         controller.vm.network :private_network, ip: "192.168.33.12"
         
-          
+        controller.vm.synced_folder "ansible/environment", "/home/ubuntu/environment"
+        controller.vm.synced_folder "ansible/YML-scripts", "/home/ubuntu/YML-SCRIPTS"
       end
     end
     
